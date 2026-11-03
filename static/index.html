@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Painel Olist · Mercado Livre</title>
+<style>
+:root{
+  color-scheme: light;
+  --bg:#f4f4f1; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#85847e; --line:#e3e2dc; --hover:#efeee9;
+  --s1:#2a78d6; --s2:#eb6834; --seq:#6da7ec;
+  --good:#1a7a4a; --warn:#9a6700; --bad:#c43232; --info:#2a78d6;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme: dark;
+    --bg:#121211; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#8f8e86; --line:#2e2e2b; --hover:#242422;
+    --s1:#3987e5; --s2:#d95926; --seq:#3987e5;
+    --good:#4cc38a; --warn:#e0a93b; --bad:#ef7676; --info:#6da7ec;
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header h1{font-size:17px;margin:0;font-weight:650}
+header .sub{color:var(--ink2);font-size:12.5px}
+header .spacer{flex:1}
+button,select,input{font:inherit;color:inherit}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+.btn:hover{background:var(--hover)}
+.btn:focus-visible,.seg button:focus-visible,.tab:focus-visible{outline:2px solid var(--s1);outline-offset:2px}
+main{max-width:1240px;margin:0 auto;padding:16px 20px 48px}
+.filters{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 11px;cursor:pointer;border-right:1px solid var(--line);color:var(--ink2)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface);font-weight:600}
+.filters label{color:var(--ink2);font-size:12.5px}
+.filters input[type=date]{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 8px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:6px 0 16px;flex-wrap:wrap}
+.tab{border:0;background:transparent;padding:9px 14px;cursor:pointer;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:550}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--s1)}
+.grid{display:grid;gap:12px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-bottom:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px}
+.kpi .l{color:var(--ink2);font-size:12.5px}
+.kpi .v{font-size:25px;font-weight:650;margin-top:2px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:12px;color:var(--ink2);margin-top:2px}
+.cols{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.card h2{font-size:14px;margin:0 0 2px;font-weight:650}
+.card .hint{color:var(--muted);font-size:12px;margin-bottom:10px}
+.head{display:flex;align-items:flex-start;gap:8px;justify-content:space-between}
+.legend{display:flex;gap:14px;font-size:12.5px;color:var(--ink2);margin:4px 0 6px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.chart{width:100%;position:relative}
+.chart svg{display:block}
+.axis{fill:var(--muted);font-size:11px}
+.gridline{stroke:var(--line);stroke-width:1}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--surface);padding:7px 10px;border-radius:8px;font-size:12.5px;z-index:9;display:none;box-shadow:0 4px 14px rgba(0,0,0,.25);max-width:260px}
+.tip b{display:block;margin-bottom:2px}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{color:var(--ink2);font-weight:600;font-size:12px;position:sticky;top:0;background:var(--surface)}
+td.n,th.n{text-align:right}
+td.wrap{white-space:normal;min-width:180px}
+.scroll{overflow:auto;max-height:440px}
+tr:hover td{background:var(--hover)}
+.hbar{display:grid;grid-template-columns:minmax(90px,160px) 1fr auto;gap:10px;align-items:center;padding:4px 0;font-size:13px}
+.hbar .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--ink2)}
+.hbar .tr{background:var(--hover);height:10px;border-radius:5px;overflow:hidden}
+.hbar .fl{height:100%;background:var(--s1);border-radius:5px}
+.hbar .vl{font-variant-numeric:tabular-nums;font-weight:600}
+.badge{display:inline-flex;gap:5px;align-items:center;font-size:12px;font-weight:600}
+.badge.good{color:var(--good)} .badge.warn{color:var(--warn)} .badge.bad{color:var(--bad)} .badge.info{color:var(--info)} .badge.mut{color:var(--muted)}
+.alerts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;font-size:12.5px}
+.chip:hover{background:var(--hover)}
+.note{color:var(--ink2);font-size:12.5px;border-left:3px solid var(--line);padding:4px 0 4px 12px;margin-top:14px}
+.empty{color:var(--muted);padding:18px 0;text-align:center}
+.err{background:var(--surface);border:1px solid var(--bad);color:var(--bad);padding:14px;border-radius:var(--radius)}
+.search{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 9px;min-width:200px}
+.sm{font-size:12px;padding:3px 9px}
+.mt{margin-top:12px}
+@media (max-width:640px){ main{padding:12px 12px 40px} .kpi .v{font-size:21px} .hbar{grid-template-columns:90px 1fr auto} }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Painel Olist · Mercado Livre</h1>
+    <div class="sub" id="conta">Carregando…</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="sub" id="atualizado"></div>
+  <button class="btn" id="refresh">Atualizar agora</button>
+</header>
+<main>
+  <div class="filters">
+    <div class="seg" id="presets" role="group" aria-label="Período"></div>
+    <span id="custom" style="display:none">
+      <label>de <input type="date" id="dFrom"></label>
+      <label>até <input type="date" id="dTo"></label>
+    </span>
+    <span style="flex:1"></span>
+    <label>Agrupar por</label>
+    <div class="seg" id="group" role="group" aria-label="Agrupar por"></div>
+  </div>
+  <div class="tabs" role="tablist" id="tabs"></div>
+  <div id="view"></div>
+</main>
+<div class="tip" id="tip"></div>
+
+<script>
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const BRL = new Intl.NumberFormat('pt-BR', {style:'currency', currency:'BRL'});
+const NUM = new Intl.NumberFormat('pt-BR', {maximumFractionDigits:1});
+const money = v => BRL.format(v || 0);
+const short = v => v >= 1e6 ? (v/1e6).toFixed(1).replace('.',',')+' mi' : v >= 1000 ? (v/1000).toFixed(1).replace('.',',').replace(',0','')+' mil' : String(Math.round(v));
+const norm = s => (s||'').trim().toLowerCase();
+const dBR = iso => iso ? iso.split('-').reverse().join('/') : '—';
+
+let DATA = null, HOJE = '';
+const S = { preset:'30d', from:'', to:'', group:'day', tab:'geral', metric:'faturamento', q:'', tables:{} };
+
+/* ---------- datas ---------- */
+const D = iso => new Date(iso + 'T12:00:00');
+const iso = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+const addDays = (i, n) => { const d = D(i); d.setDate(d.getDate()+n); return iso(d); };
+const monday = i => { const d = D(i); const w = (d.getDay()+6)%7; d.setDate(d.getDate()-w); return iso(d); };
+const MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+function key(i, g){ return g==='day' ? i : g==='week' ? monday(i) : i.slice(0,7); }
+function label(k, g){
+  if (g==='day') return k.slice(8)+'/'+k.slice(5,7);
+  if (g==='week') return 'sem '+k.slice(8)+'/'+k.slice(5,7);
+  return MES[+k.slice(5,7)-1]+'/'+k.slice(2,4);
+}
+function longLabel(k, g){
+  if (g==='day') return dBR(k);
+  if (g==='week') return 'Semana de '+dBR(k)+' a '+dBR(addDays(k,6));
+  return MES[+k.slice(5,7)-1]+' de '+k.slice(0,4);
+}
+function range(){
+  const t = HOJE, m = t.slice(0,7)+'-01';
+  switch (S.preset){
+    case 'hoje': return [t,t];
+    case 'ontem': { const y=addDays(t,-1); return [y,y]; }
+    case '7d': return [addDays(t,-6), t];
+    case '30d': return [addDays(t,-29), t];
+    case 'mes': return [m, t];
+    case 'mespassado': { const e=addDays(m,-1); return [e.slice(0,7)+'-01', e]; }
+    case 'tudo': { const ds = DATA.pedidos.map(p=>p.data).sort(); return [ds[0]||t, t]; }
+    default: return [S.from||m, S.to||t];
+  }
+}
+function buckets(from, to, g){
+  const out = []; let c = from;
+  while (c <= to){ const k = key(c,g); if (out[out.length-1] !== k) out.push(k); c = addDays(c,1); }
+  return out;
+}
+
+/* ---------- dados derivados ---------- */
+const vivo = p => !/cancel/i.test(p.situacao);
+const inR = (d,[a,b]) => d >= a && d <= b;
+function prevRange([a,b]){ const n = Math.round((D(b)-D(a))/864e5)+1; return [addDays(a,-n), addDays(a,-1)]; }
+function agg(pedidos){
+  const r = {fat:0, ped:pedidos.length, un:0, frete:0, rec:0};
+  pedidos.forEach(p=>{ r.fat+=p.total_produtos; r.frete+=p.frete; r.rec+=p.recebido; p.itens.forEach(i=>r.un+=i.qtd); });
+  r.tk = r.ped ? r.fat/r.ped : 0; return r;
+}
+function guiaDe(p){ return DATA.pagar.filter(g => String(g.pedido) === String(p.numero) && g.situacao !== 'cancelado'); }
+function refDate(g){ const p = DATA.pedidos.find(x => String(x.numero)===String(g.pedido)); return p ? p.data : g.emissao; }
+function conc(p){
+  const guias = guiaDe(p), guia = guias.reduce((s,g)=>s+g.valor,0), aberta = guias.some(g=>g.situacao==='aberto');
+  const dif = Math.abs(p.recebido-p.total_produtos) <= Math.abs(p.recebido-p.total_pedido) ? p.recebido-p.total_produtos : p.recebido-p.total_pedido;
+  let st;
+  if (!vivo(p)) st = 'cancelado';
+  else if (!p.tem_pagamento) st = 'sempag';
+  else if (Math.abs(dif) > 0.01) st = 'diverg';
+  else if (aberta) st = 'imposto';
+  else st = 'ok';
+  return {guia, aberta, dif, st, liquido: p.recebido-guia};
+}
+const STATUS = {
+  ok:['good','✔','Conciliado'], diverg:['warn','⚠','Divergência'], sempag:['bad','✖','Sem pagamento registrado'],
+  imposto:['info','●','Imposto em aberto'], cancelado:['mut','–','Cancelado']
+};
+const badge = k => `<span class="badge ${STATUS[k][0]}"><span aria-hidden="true">${STATUS[k][1]}</span>${STATUS[k][2]}</span>`;
+
+/* ---------- tooltip ---------- */
+const tip = $('#tip');
+function showTip(html, ev){
+  tip.innerHTML = html; tip.style.display = 'block';
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let x = ev.clientX + 14, y = ev.clientY - h - 10;
+  if (x + w > innerWidth - 8) x = ev.clientX - w - 14;
+  if (y < 8) y = ev.clientY + 16;
+  tip.style.left = x+'px'; tip.style.top = y+'px';
+}
+const hideTip = () => tip.style.display = 'none';
+
+/* ---------- gráfico de barras (1 ou 2 séries, mesmo eixo) ---------- */
+function niceMax(v){ if (v<=0) return 1; const e = Math.pow(10, Math.floor(Math.log10(v))), f = v/e; return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e; }
+function barChart(el, cats, series, fmt){
+  const W = Math.max(320, el.clientWidth || 600), H = 250, L = 52, R = 8, T = 10, B = 30;
+  const max = niceMax(Math.max(0, ...series.flatMap(s=>s.values)));
+  const n = cats.length, band = (W-L-R)/n, iw = H-T-B;
+  const bw = Math.max(3, Math.min(30, band*0.72/series.length - 2));
+  const y = v => T + iw - (v/max)*iw;
+  let svg = `<svg width="${W}" height="${H}" role="img" aria-label="Gráfico de barras com ${n} períodos">`;
+  for (let i=0;i<=4;i++){
+    const v = max*i/4, yy = y(v);
+    svg += `<line class="gridline" x1="${L}" x2="${W-R}" y1="${yy}" y2="${yy}"/><text class="axis" x="${L-8}" y="${yy+4}" text-anchor="end">${fmt===money?short(v):NUM.format(v)}</text>`;
+  }
+  const step = Math.max(1, Math.ceil(52/band));
+  cats.forEach((c,i)=>{ if (i%step===0 || i===n-1 && (n-1)%step===0) svg += `<text class="axis" x="${L+band*i+band/2}" y="${H-10}" text-anchor="middle">${esc(c.short)}</text>`; });
+  cats.forEach((c,i)=>{
+    const gx = L + band*i + (band - (bw+2)*series.length + 2)/2;
+    series.forEach((s,j)=>{
+      const v = s.values[i]; if (v <= 0) return;
+      const x = gx + j*(bw+2), h = Math.max(1,(v/max)*iw), yy = T+iw-h, r = Math.min(4, bw/2, h);
+      svg += `<path d="M${x},${T+iw} V${yy+r} Q${x},${yy} ${x+r},${yy} H${x+bw-r} Q${x+bw},${yy} ${x+bw},${yy+r} V${T+iw} Z" fill="${s.color}"/>`;
+    });
+    svg += `<rect class="hit" data-i="${i}" x="${L+band*i}" y="${T}" width="${band}" height="${iw+B}" fill="transparent"/>`;
+  });
+  svg += '</svg>';
+  el.innerHTML = svg;
+  el.querySelectorAll('.hit').forEach(r => {
+    const i = +r.dataset.i;
+    const move = ev => showTip(`<b>${esc(cats[i].long)}</b>` + series.map(s=>`<div><i style="background:${s.color}"></i>${esc(s.name)}: <b style="display:inline">${fmt(s.values[i])}</b></div>`).join(''), ev);
+    r.addEventListener('mousemove', move); r.addEventListener('mouseleave', hideTip);
+    r.addEventListener('touchstart', e => move(e.touches[0]), {passive:true});
+  });
+}
+const legend = series => series.length > 1 ? `<div class="legend">${series.map(s=>`<span><i style="background:${s.color}"></i>${esc(s.name)}</span>`).join('')}</div>` : '';
+
+/* gráfico + alternância para tabela */
+function chartCard(id, title, hint, cats, series, fmt){
+  const asTable = S.tables[id];
+  const tbl = `<div class="scroll"><table><thead><tr><th>Período</th>${series.map(s=>`<th class="n">${esc(s.name)}</th>`).join('')}</tr></thead><tbody>` +
+    cats.map((c,i)=>`<tr><td>${esc(c.long)}</td>${series.map(s=>`<td class="n">${fmt(s.values[i])}</td>`).join('')}</tr>`).join('') + '</tbody></table></div>';
+  return `<div class="card" data-chart="${id}"><div class="head"><div><h2>${esc(title)}</h2><div class="hint">${esc(hint)}</div></div>
+    <button class="btn sm" data-toggle="${id}">${asTable?'Ver gráfico':'Ver tabela'}</button></div>
+    ${legend(series)}${asTable ? tbl : `<div class="chart" id="ch-${id}"></div>`}</div>`;
+}
+function drawCharts(spec){
+  spec.forEach(([id,cats,series,fmt]) => { const el = $('#ch-'+id); if (el) barChart(el, cats, series, fmt); });
+  document.querySelectorAll('[data-toggle]').forEach(b => b.onclick = () => { S.tables[b.dataset.toggle] = !S.tables[b.dataset.toggle]; render(); });
+}
+
+/* ---------- barras horizontais ---------- */
+function hbars(items, fmt){
+  if (!items.length) return '<div class="empty">Sem dados no período.</div>';
+  const max = Math.max(...items.map(i=>i.v)) || 1;
+  return items.map(i=>`<div class="hbar"><span class="nm" title="${esc(i.k)}">${esc(i.k)}</span><span class="tr"><span class="fl" style="display:block;width:${Math.max(2,i.v/max*100)}%"></span></span><span class="vl">${fmt(i.v)}</span></div>`).join('');
+}
+const delta = (cur, prev, hasPrev) => !hasPrev ? '' : prev === 0 ? (cur>0 ? '<div class="d">novo no período</div>' : '') :
+  `<div class="d">${cur>=prev?'▲':'▼'} ${NUM.format(Math.abs(cur-prev)/prev*100)}% vs. período anterior</div>`;
+const kpi = (l, v, d='') => `<div class="card kpi"><div class="l">${l}</div><div class="v">${v}</div>${d}</div>`;
+
+/* ---------- abas ---------- */
+const TABS = [['geral','Visão geral'],['vendas','Vendas'],['estoque','Estoque'],['caixa','Conciliação do caixa']];
+
+function periodData(){
+  const r = range(), g = S.group, ks = buckets(r[0], r[1], g);
+  const cats = ks.map(k=>({k, short:label(k,g), long:longLabel(k,g)}));
+  return {r, g, cats, ks};
+}
+
+function viewGeral(){
+  const {r, g, cats, ks} = periodData();
+  const cur = DATA.pedidos.filter(p=>vivo(p)&&inR(p.data,r)), A = agg(cur);
+  const hasPrev = S.preset !== 'tudo', pr = prevRange(r), P = agg(DATA.pedidos.filter(p=>vivo(p)&&inR(p.data,pr)));
+  const fat = ks.map(k=>cur.filter(p=>key(p.data,g)===k).reduce((s,p)=>s+p.total_produtos,0));
+  // alertas
+  const low = estoqueRows().filter(x=>x.st!=='ok').length;
+  const hoje = HOJE;
+  const venc = DATA.pagar.filter(x=>x.situacao==='aberto' && x.vencimento < hoje);
+  const dv = DATA.pedidos.filter(p=>conc(p).st==='diverg').length;
+  const alerts = `<div class="alerts">
+    <button class="chip" data-go="estoque">📦 ${low} produto(s) com estoque baixo ou zerado</button>
+    <button class="chip" data-go="caixa">🧾 ${venc.length} guia(s) de imposto vencida(s)${venc.length?' · '+money(venc.reduce((s,x)=>s+x.saldo,0)):''}</button>
+    <button class="chip" data-go="caixa">⚠ ${dv} pedido(s) com divergência de pagamento</button></div>`;
+  // top produtos e status
+  const prod = {}; cur.forEach(p=>p.itens.forEach(i=>{ const k=i.descricao||i.codigo; prod[k]=(prod[k]||0)+i.qtd*i.unit; }));
+  const top = Object.entries(prod).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([k,v])=>({k,v}));
+  const st = {}; DATA.pedidos.filter(p=>inR(p.data,r)).forEach(p=>st[p.situacao]=(st[p.situacao]||0)+1);
+  const sts = Object.entries(st).sort((a,b)=>b[1]-a[1]).map(([k,v])=>({k,v}));
+  const html = alerts + `<div class="grid kpis">
+    ${kpi('Faturamento (produtos)', money(A.fat), delta(A.fat,P.fat,hasPrev))}
+    ${kpi('Pedidos', A.ped, delta(A.ped,P.ped,hasPrev))}
+    ${kpi('Ticket médio', money(A.tk), delta(A.tk,P.tk,hasPrev))}
+    ${kpi('Unidades vendidas', NUM.format(A.un), delta(A.un,P.un,hasPrev))}
+    ${kpi('Recebido (pag. integrados)', money(A.rec), delta(A.rec,P.rec,hasPrev))}</div>
+    <div class="grid">${chartCard('fat','Faturamento por '+{day:'dia',week:'semana',month:'mês'}[g], 'Valor dos produtos dos pedidos não cancelados', cats, [{name:'Faturamento',color:'var(--s1)',values:fat}], money)}</div>
+    <div class="grid cols mt">
+      <div class="card"><h2>Pedidos por situação</h2><div class="hint">Todos os pedidos do período</div>${hbars(sts, v=>v)}</div>
+      <div class="card"><h2>Produtos que mais faturaram</h2><div class="hint">Período selecionado</div>${hbars(top, money)}</div>
+    </div>`;
+  return {html, charts:[['fat',cats,[{name:'Faturamento',color:'var(--s1)',values:fat}],money]]};
+}
+
+function viewVendas(){
+  const {r, g, cats, ks} = periodData();
+  const cur = DATA.pedidos.filter(p=>vivo(p)&&inR(p.data,r));
+  const M = {faturamento:['Faturamento', p=>p.total_produtos, money], pedidos:['Pedidos', p=>1, v=>NUM.format(v)], unidades:['Unidades', p=>p.itens.reduce((s,i)=>s+i.qtd,0), v=>NUM.format(v)]};
+  const [nm, fn, fmt] = M[S.metric];
+  const vals = ks.map(k=>cur.filter(p=>key(p.data,g)===k).reduce((s,p)=>s+fn(p),0));
+  const series = [{name:nm, color:'var(--s1)', values:vals}];
+  const rows = ks.map(k=>{ const ps = cur.filter(p=>key(p.data,g)===k), a = agg(ps); return {k, ...a}; }).filter(x=>x.ped).reverse();
+  const q = norm(S.q);
+  const list = DATA.pedidos.filter(p=>inR(p.data,r) && (!q || [p.numero,p.ecommerce,p.cliente,p.cidade,p.uf,p.situacao,...p.itens.map(i=>i.descricao)].join(' ').toLowerCase().includes(q))).reverse();
+  const seg = `<div class="seg" id="metric" role="group" aria-label="Métrica">${Object.entries(M).map(([k,v])=>`<button data-m="${k}" aria-pressed="${S.metric===k}">${v[0]}</button>`).join('')}</div>`;
+  const html = `<div style="margin-bottom:12px">${seg}</div>
+    <div class="grid">${chartCard('vend','Vendas por '+{day:'dia',week:'semana',month:'mês'}[g]+' · '+nm,'Pedidos não cancelados', cats, series, fmt)}</div>
+    <div class="grid cols mt">
+      <div class="card"><h2>Resumo por período</h2><div class="hint">Só períodos com vendas</div><div class="scroll"><table><thead><tr><th>Período</th><th class="n">Pedidos</th><th class="n">Unid.</th><th class="n">Faturamento</th><th class="n">Ticket</th></tr></thead><tbody>
+        ${rows.map(x=>`<tr><td>${esc(longLabel(x.k,g))}</td><td class="n">${x.ped}</td><td class="n">${NUM.format(x.un)}</td><td class="n">${money(x.fat)}</td><td class="n">${money(x.tk)}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">Sem vendas no período.</td></tr>'}
+      </tbody></table></div></div>
+      <div class="card"><h2>Por estado (UF)</h2><div class="hint">Faturamento no período</div>${hbars(Object.entries(cur.reduce((a,p)=>(a[p.uf||'—']=(a[p.uf||'—']||0)+p.total_produtos,a),{})).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([k,v])=>({k,v})), money)}</div>
+    </div>
+    <div class="card mt"><div class="head"><div><h2>Pedidos (${list.length})</h2><div class="hint">Inclui cancelados · o CPF do cliente não é exibido</div></div>
+      <input class="search" id="q" placeholder="Buscar pedido, cliente, produto…" value="${esc(S.q)}"></div>
+      <div class="scroll"><table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th>Produto(s)</th><th>UF</th><th class="n">Produtos</th><th class="n">Frete</th><th class="n">Total</th><th>Situação</th></tr></thead><tbody>
+      ${list.map(p=>`<tr><td>${esc(p.numero)}</td><td>${dBR(p.data)}</td><td class="wrap">${esc(p.cliente)}</td><td class="wrap">${esc(p.itens.map(i=>NUM.format(i.qtd)+'× '+i.descricao).join('; '))}</td><td>${esc(p.uf)}</td><td class="n">${money(p.total_produtos)}</td><td class="n">${money(p.frete)}</td><td class="n">${money(p.total_pedido)}</td><td>${esc(p.situacao)}</td></tr>`).join('') || '<tr><td colspan="9" class="empty">Nenhum pedido.</td></tr>'}
+      </tbody></table></div></div>`;
+  return {html, charts:[['vend',cats,series,fmt]], after(){
+    document.querySelectorAll('#metric button').forEach(b=>b.onclick=()=>{S.metric=b.dataset.m; render();});
+    const q = $('#q'); if (q) q.oninput = () => { S.q = q.value; const pos = q.selectionStart; render(); const n=$('#q'); n.focus(); n.setSelectionRange(pos,pos); };
+  }};
+}
+
+function estoqueRows(){
+  const since = addDays(HOJE,-29);
+  const sold = {};
+  DATA.pedidos.filter(p=>vivo(p)&&p.data>=since).forEach(p=>p.itens.forEach(i=>sold[i.codigo]=(sold[i.codigo]||0)+i.qtd));
+  return DATA.produtos.map(p=>{
+    const v30 = sold[p.codigo]||0, cob = v30 ? p.disponivel/(v30/30) : null;
+    let st = 'ok'; if (p.disponivel<=0) st='zero'; else if (p.disponivel<=5 || (cob!==null && cob<=15)) st='baixo';
+    return {...p, v30, cob, st};
+  });
+}
+const STK = {zero:['bad','✖','Sem estoque'], baixo:['warn','⚠','Baixo'], ok:['good','✔','OK']};
+
+function viewEstoque(){
+  const rows = estoqueRows(), un = rows.reduce((s,x)=>s+x.saldo,0), val = rows.reduce((s,x)=>s+x.saldo*x.preco,0), cost = rows.reduce((s,x)=>s+x.saldo*x.custo,0);
+  const zero = rows.filter(x=>x.st==='zero').length, baixo = rows.filter(x=>x.st==='baixo').length;
+  const ord = {zero:0,baixo:1,ok:2};
+  const sorted = [...rows].sort((a,b)=>ord[a.st]-ord[b.st] || (a.cob??1e9)-(b.cob??1e9) || a.nome.localeCompare(b.nome));
+  const html = `<div class="grid kpis">
+    ${kpi('Produtos ativos', rows.length)}
+    ${kpi('Unidades em estoque', NUM.format(un))}
+    ${kpi('Valor a preço de venda', money(val), `<div class="d">${cost?('a custo: '+money(cost)):'custo não cadastrado na Olist'}</div>`)}
+    ${kpi('Sem estoque', zero)}
+    ${kpi('Estoque baixo', baixo, '<div class="d">≤ 5 un. ou ≤ 15 dias de cobertura</div>')}</div>
+    <div class="card"><h2>Estoque por produto</h2><div class="hint">Vendas e cobertura consideram os últimos 30 dias (independe do filtro de período). Produtos sem preço cadastrado usam o último preço vendido.</div>
+    <div class="scroll"><table><thead><tr><th>Produto</th><th>Código</th><th class="n">Saldo</th><th class="n">Reservado</th><th class="n">Disponível</th><th class="n">Vend. 30d</th><th class="n">Cobertura</th><th class="n">Preço</th><th class="n">Valor em estoque</th><th>Situação</th></tr></thead><tbody>
+    ${sorted.map(x=>`<tr><td class="wrap">${esc(x.nome)}</td><td>${esc(x.codigo)}</td><td class="n">${NUM.format(x.saldo)}</td><td class="n">${NUM.format(x.reservado)}</td><td class="n">${NUM.format(x.disponivel)}</td><td class="n">${NUM.format(x.v30)}</td><td class="n">${x.cob===null?'sem vendas':NUM.format(Math.round(x.cob))+' dias'}</td><td class="n">${x.preco?money(x.preco):'—'}</td><td class="n">${money(x.saldo*x.preco)}</td><td><span class="badge ${STK[x.st][0]}"><span aria-hidden="true">${STK[x.st][1]}</span>${STK[x.st][2]}</span></td></tr>`).join('')}
+    </tbody></table></div></div>`;
+  return {html, charts:[]};
+}
+
+function viewCaixa(){
+  const {r, g, cats, ks} = periodData();
+  const peds = DATA.pedidos.filter(p=>inR(p.data,r));
+  const vivos = peds.filter(vivo);
+  const guias = DATA.pagar.filter(x=>x.situacao!=='cancelado' && inR(refDate(x), r));
+  const entrada = vivos.reduce((s,p)=>s+p.recebido,0), saida = guias.reduce((s,x)=>s+x.valor,0);
+  const ent = ks.map(k=>vivos.filter(p=>key(p.data,g)===k).reduce((s,p)=>s+p.recebido,0));
+  const sai = ks.map(k=>guias.filter(x=>key(refDate(x),g)===k).reduce((s,x)=>s+x.valor,0));
+  const series = [{name:'Recebido (pagamentos integrados)', color:'var(--s1)', values:ent},{name:'Guias de imposto', color:'var(--s2)', values:sai}];
+  const cs = peds.map(p=>({p, c:conc(p)}));
+  const nd = cs.filter(x=>x.c.st==='diverg'||x.c.st==='sempag').length;
+  const abertas = DATA.pagar.filter(x=>x.situacao==='aberto').sort((a,b)=>a.vencimento.localeCompare(b.vencimento));
+  const vencidas = abertas.filter(x=>x.vencimento < HOJE);
+  const html = `<div class="grid kpis">
+    ${kpi('Recebido no período', money(entrada), '<div class="d">pedidos não cancelados</div>')}
+    ${kpi('Guias de imposto', money(saida), '<div class="d">ligadas aos pedidos do período</div>')}
+    ${kpi('Saldo após impostos', money(entrada-saida))}
+    ${kpi('Pedidos a conferir', nd, '<div class="d">divergência ou sem pagamento</div>')}
+    ${kpi('Guias vencidas', vencidas.length, `<div class="d">${money(vencidas.reduce((s,x)=>s+x.saldo,0))} em aberto</div>`)}</div>
+    <div class="grid">${chartCard('caixa','Entradas e saídas por '+{day:'dia',week:'semana',month:'mês'}[g],'Entradas pela data do pedido · guias pela data do pedido a que pertencem', cats, series, money)}</div>
+    <div class="card mt"><h2>Conciliação por pedido</h2><div class="hint">“Diferença” compara o recebido com o valor dos produtos ou com o total do pedido (o que estiver mais próximo).</div>
+    <div class="scroll"><table><thead><tr><th>Nº</th><th>Data</th><th>Cliente</th><th class="n">Produtos</th><th class="n">Total pedido</th><th class="n">Recebido</th><th class="n">Diferença</th><th class="n">Guia imposto</th><th class="n">Líquido</th><th>Status</th></tr></thead><tbody>
+    ${[...cs].reverse().map(({p,c})=>`<tr><td>${esc(p.numero)}</td><td>${dBR(p.data)}</td><td class="wrap">${esc(p.cliente)}</td><td class="n">${money(p.total_produtos)}</td><td class="n">${money(p.total_pedido)}</td><td class="n">${p.tem_pagamento?money(p.recebido):'—'}</td><td class="n">${p.tem_pagamento&&vivo(p)?(Math.abs(c.dif)<=0.01?'—':money(c.dif)):'—'}</td><td class="n">${c.guia?money(c.guia):'—'}</td><td class="n">${vivo(p)?money(c.liquido):'—'}</td><td>${badge(c.st)}</td></tr>`).join('') || '<tr><td colspan="10" class="empty">Nenhum pedido no período.</td></tr>'}
+    </tbody></table></div></div>
+    <div class="grid cols mt">
+      <div class="card"><h2>Contas a pagar em aberto</h2><div class="hint">Todas, independente do período</div><div class="scroll"><table><thead><tr><th>Vencimento</th><th>Referência</th><th class="n">Saldo</th><th>Situação</th></tr></thead><tbody>
+      ${abertas.map(x=>`<tr><td>${dBR(x.vencimento)}</td><td class="wrap">${esc(x.fornecedor)}${x.pedido?' · pedido '+esc(x.pedido):''}</td><td class="n">${money(x.saldo)}</td><td>${x.vencimento<HOJE?'<span class="badge bad"><span aria-hidden="true">✖</span>Vencida</span>':x.vencimento===HOJE?'<span class="badge warn"><span aria-hidden="true">⚠</span>Vence hoje</span>':'<span class="badge info"><span aria-hidden="true">●</span>A vencer</span>'}</td></tr>`).join('') || '<tr><td colspan="4" class="empty">Nada em aberto.</td></tr>'}
+      </tbody></table></div></div>
+      <div class="card"><h2>Contas a receber (Olist)</h2><div class="hint">Lançamentos de contas a receber cadastrados no ERP</div>
+      ${DATA.receber.length ? `<div class="scroll"><table><thead><tr><th>Venc.</th><th>Cliente</th><th class="n">Saldo</th><th>Situação</th></tr></thead><tbody>${DATA.receber.map(x=>`<tr><td>${dBR(x.vencimento)}</td><td class="wrap">${esc(x.cliente)}</td><td class="n">${money(x.saldo)}</td><td>${esc(x.situacao)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Nenhuma conta a receber lançada na Olist. As vendas do Mercado Livre entram pelos pagamentos integrados dos pedidos.</div>'}</div>
+    </div>
+    <div class="note">Limite desta conciliação: a Olist não informa as tarifas do Mercado Livre nem os repasses efetivos do Mercado Pago. “Recebido” é o valor do pagamento integrado ao pedido, não o dinheiro que já caiu na conta. Para fechar o caixa de verdade, o próximo passo é cruzar com o extrato do Mercado Pago.</div>`;
+  return {html, charts:[['caixa',cats,series,money]]};
+}
+
+/* ---------- render ---------- */
+function render(){
+  if (!DATA) return;
+  // filtros
+  const P = [['hoje','Hoje'],['ontem','Ontem'],['7d','7 dias'],['30d','30 dias'],['mes','Este mês'],['mespassado','Mês passado'],['tudo','Tudo'],['custom','Personalizado']];
+  $('#presets').innerHTML = P.map(([k,l])=>`<button data-p="${k}" aria-pressed="${S.preset===k}">${l}</button>`).join('');
+  $('#group').innerHTML = [['day','Dia'],['week','Semana'],['month','Mês']].map(([k,l])=>`<button data-g="${k}" aria-pressed="${S.group===k}">${l}</button>`).join('');
+  $('#custom').style.display = S.preset==='custom' ? '' : 'none';
+  const r = range(); $('#dFrom').value = r[0]; $('#dTo').value = r[1];
+  $('#tabs').innerHTML = TABS.map(([k,l])=>`<button class="tab" role="tab" data-t="${k}" aria-selected="${S.tab===k}">${l}</button>`).join('');
+  document.querySelectorAll('#presets button').forEach(b=>b.onclick=()=>{ S.preset=b.dataset.p; if (S.preset==='custom'){S.from=r[0];S.to=r[1];} const n = Math.round((D(range()[1])-D(range()[0]))/864e5)+1; if (S.preset!=='custom') S.group = n>120?'month':n>45?'week':'day'; render(); });
+  document.querySelectorAll('#group button').forEach(b=>b.onclick=()=>{ S.group=b.dataset.g; render(); });
+  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{ S.tab=b.dataset.t; render(); });
+  const v = ({geral:viewGeral, vendas:viewVendas, estoque:viewEstoque, caixa:viewCaixa})[S.tab]();
+  $('#view').innerHTML = v.html;
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>{ S.tab=b.dataset.go; render(); scrollTo(0,0); });
+  drawCharts(v.charts); if (v.after) v.after();
+}
+$('#dFrom').onchange = e => { S.preset='custom'; S.from=e.target.value; render(); };
+$('#dTo').onchange = e => { S.preset='custom'; S.to=e.target.value; render(); };
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(render, 150); });
+
+async function load(refresh){
+  $('#atualizado').textContent = 'Atualizando…'; $('#refresh').disabled = true;
+  try {
+    const res = await fetch('/api/data' + (refresh ? '?refresh=1' : ''), {cache:'no-store'});
+    const j = await res.json();
+    if (!res.ok) throw new Error(j.erro || res.status);
+    DATA = j; HOJE = j.gerado_em.slice(0,10);
+    $('#conta').textContent = j.conta + ' · Olist ERP';
+    $('#atualizado').textContent = 'Atualizado em ' + dBR(HOJE) + ' às ' + j.gerado_em.slice(11,16);
+    render();
+  } catch (e) {
+    $('#atualizado').textContent = '';
+    if (!DATA) $('#view').innerHTML = `<div class="err"><b>Não consegui ler os dados da Olist.</b><br>${esc(e.message)}<br><small>Tente “Atualizar agora” em um minuto.</small></div>`;
+    else $('#atualizado').textContent = 'Falha ao atualizar: ' + e.message;
+  } finally { $('#refresh').disabled = false; }
+}
+$('#refresh').onclick = () => load(true);
+load(false);
+</script>
+</body>
+</html>
